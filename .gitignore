@@ -1,0 +1,14 @@
+# Environnement Python local (recréé par run.sh)
+.venv/
+
+# Données locales : base SQLite, flux NVD téléchargés, et surtout la clé API NVD
+# saisie dans l'interface. Ne doit jamais être versionné.
+data/
+
+# Artefacts Python
+__pycache__/
+*.py[cod]
+
+# Secrets éventuels
+.env
+*.env

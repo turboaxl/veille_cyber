@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Veille CVE</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button id="btn-sidebar" class="menu-btn" type="button" aria-expanded="false" title="Afficher / masquer le menu ( [ )">
+      <span class="arrow" aria-hidden="true">▶</span> MENU
+    </button>
+    <button id="brand" class="brand" type="button" title="Retour au trending">VEILLE<span>CVE</span></button>
+    <input id="search" type="search" placeholder="Rechercher une CVE, un produit, une techno…  ( / )" autocomplete="off" spellcheck="false">
+    <div class="sort-menu">
+      <button id="btn-sort" class="box-btn" type="button" aria-haspopup="true" aria-expanded="false">
+        Tri <span class="arrow" aria-hidden="true">▾</span>
+      </button>
+      <div class="dropdown opts" id="f-sort" hidden>
+        <button data-v="published" class="opt">Plus récentes</button>
+        <button data-v="score" class="opt">Score CVSS</button>
+        <button data-v="stars" class="opt">Étoiles des PoC</button>
+      </div>
+    </div>
+    <div class="sort-menu">
+      <button id="btn-depth" class="box-btn" type="button" aria-haspopup="true" aria-expanded="false"
+              title="Période sur laquelle la recherche interroge la NVD">
+        Recherche sur <span id="depth-label">1 mois</span> <span class="arrow" aria-hidden="true">▾</span>
+      </button>
+      <div class="dropdown opts" id="f-depth" hidden>
+        <button data-v="30" class="opt">1 mois</button>
+        <button data-v="90" class="opt">3 mois</button>
+        <button data-v="180" class="opt">6 mois</button>
+        <button data-v="365" class="opt">1 an</button>
+        <button data-v="730" class="opt">2 ans</button>
+        <button data-v="1095" class="opt">3 ans</button>
+      </div>
+    </div>
+    <div class="status">
+      <span id="status-text"></span>
+      <button id="btn-update" type="button" title="Mettre à jour maintenant">↻</button>
+    </div>
+  </header>
+
+  <div class="layout collapsed" id="layout">
+    <aside class="sidebar" id="sidebar">
+      <nav class="nav">
+        <button data-view="trending" class="nav-item">Trending</button>
+        <button data-view="list" class="nav-item">Toutes les vulns</button>
+        <button data-view="likes" class="nav-item">Favoris</button>
+      </nav>
+
+      <h3>Filtres</h3>
+      <button id="f-poc" class="opt" type="button" aria-pressed="false">PoC disponible</button>
+
+      <h3>Période</h3>
+      <div class="segmented" id="f-days">
+        <button data-v="1">24H</button>
+        <button data-v="7">7J</button>
+        <button data-v="30" class="active">30J</button>
+        <button data-v="90">90J</button>
+        <button data-v="180">6M</button>
+        <button data-v="365">1 AN</button>
+        <button data-v="730">2 ANS</button>
+        <button data-v="1095">3 ANS</button>
+      </div>
+      <div class="opts" id="f-datefield">
+        <button data-v="published" class="opt">Date de publication</button>
+        <button data-v="poc" class="opt">Date du PoC</button>
+      </div>
+
+      <details class="group" id="g-severity">
+        <summary>Sévérité <span class="badge" id="sev-badge"></span></summary>
+        <div class="opts" id="f-severity">
+          <button data-v="CRITICAL" class="opt">Critique</button>
+          <button data-v="HIGH" class="opt">Haute</button>
+          <button data-v="MEDIUM" class="opt">Moyenne</button>
+          <button data-v="LOW" class="opt">Basse</button>
+        </div>
+      </details>
+
+      <details class="group" id="g-component">
+        <summary>Composant &amp; technologies <span class="badge" id="comp-badge"></span></summary>
+        <input id="f-product" class="field" type="search" placeholder="Produit (ex : nginx)" autocomplete="off" spellcheck="false">
+        <input id="f-version" class="field" type="search" placeholder="Version (ex : 1.24.0)" autocomplete="off" spellcheck="false">
+        <p class="hint">Sans produit, la version s'applique au texte recherché.</p>
+        <button id="f-tag-all" class="opt small" type="button" aria-pressed="false" hidden>Tous les tags sélectionnés</button>
+        <input id="tag-search" class="field" type="search" placeholder="Filtrer les technos…" hidden>
+        <div id="tag-list" class="opts"></div>
+        <button id="tag-more" type="button" class="link" hidden></button>
+      </details>
+
+      <details class="group magic-group" id="g-magic">
+        <summary>✦ Magic filters <span class="badge" id="magic-badge"></span></summary>
+        <p class="hint">Recherches prédéfinies : plusieurs technos lancées d'un coup selon le scénario de test.</p>
+        <div id="magic-list"></div>
+        <form id="magic-new" autocomplete="off">
+          <input class="field" name="name" placeholder="+ Nouveau magic filter…" maxlength="60">
+        </form>
+      </details>
+
+      <details class="group" id="g-settings">
+        <summary>Clé API NVD <span class="badge" id="key-badge"></span></summary>
+        <p class="hint">
+          Clé gratuite : les recherches deviennent ~8× plus rapides.
+          <a href="https://nvd.nist.gov/developers/request-an-api-key" target="_blank" rel="noopener">En demander une ▸</a>
+        </p>
+        <form id="key-form" autocomplete="off">
+          <input class="field" id="key-input" name="key" type="password" maxlength="100"
+                 placeholder="Coller la clé puis Entrée" autocomplete="off" spellcheck="false">
+        </form>
+        <p class="hint" id="key-status"></p>
+        <button id="key-remove" class="link" type="button" hidden>Supprimer la clé</button>
+      </details>
+    </aside>
+    <div class="resizer" id="resizer" title="Glisser pour redimensionner · double-clic pour réinitialiser"></div>
+
+    <main>
+      <!-- Page trending -->
+      <section id="view-trending" hidden>
+        <header class="page-head">
+          <h1>Trending</h1>
+          <p class="dialog">Les 20 CVE aux PoC GitHub les plus étoilés, créés ces 3 derniers mois. Une CVE n'apparaît qu'une fois : ses PoC sont regroupés.</p>
+        </header>
+        <div id="trending-list" class="cards"></div>
+      </section>
+
+      <!-- Liste / favoris -->
+      <section id="view-list" hidden>
+        <header class="page-head">
+          <h1 id="list-title">Vulnérabilités</h1>
+          <div class="result-bar">
+            <span id="result-count"></span>
+            <button id="btn-reset" type="button" class="link" hidden>Effacer les filtres</button>
+            <span id="remote-status" class="remote" aria-live="polite"></span>
+        <div class="sort-menu add-magic" id="add-magic" hidden>
+          <button id="btn-add-magic" type="button" class="link" aria-haspopup="true" aria-expanded="false"></button>
+          <div class="dropdown opts" id="f-add-magic" hidden></div>
+        </div>
+          </div>
+        </header>
+        <div id="list" class="cards"></div>
+        <div id="pager" class="pager"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="drawer-backdrop" class="backdrop" hidden></div>
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <button id="drawer-close" class="close" type="button" aria-label="Fermer">✕</button>
+    <div id="drawer-content"></div>
+  </aside>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

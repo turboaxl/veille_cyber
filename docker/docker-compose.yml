@@ -1,0 +1,23 @@
+# Lancement : docker compose -f docker/docker-compose.yml up -d --build
+services:
+  veille:
+    build:
+      context: ..                 # la racine du projet, pas ce dossier
+      dockerfile: docker/Dockerfile
+    image: veille-cve:latest
+    container_name: veille-cve
+    # Écoute uniquement en local : l'application n'a aucune authentification.
+    # Pour l'exposer sur le réseau, remplacer par "6060:6060" en connaissance de cause.
+    ports:
+      - "127.0.0.1:6060:6060"
+    volumes:
+      - veille-data:/app/data     # base SQLite : survit aux reconstructions
+    environment:
+      VEILLE_DAYS: "5"            # historique conservé, en jours
+      # NVD_API_KEY: ""           # recherches ~8x plus rapides
+      # GITHUB_TOKEN: ""          # évite le rate-limit GitHub (trending)
+      TZ: Europe/Paris
+    restart: unless-stopped
+
+volumes:
+  veille-data:

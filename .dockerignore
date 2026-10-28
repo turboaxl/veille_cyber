@@ -1,0 +1,12 @@
+# Doit rester à la racine : Docker ne lit le .dockerignore que dans le contexte de build.
+# Objectif : n'envoyer au démon que le code (~230 Ko) et pas la base (~120 Mo).
+.venv/
+data/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+run.sh
+README.md
+docker/
