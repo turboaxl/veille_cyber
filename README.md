@@ -6,7 +6,7 @@ Application web locale de veille sur les CVE récentes, orientée pentest.
 
 ### Sans Docker
 
-Prérequis : Python 3.9+ avec le module `venv`, et un accès Internet.
+Prérequis : Python 3.9+ avec le module `venv`.
 
 Créer un venv, puis :
 ```bash
